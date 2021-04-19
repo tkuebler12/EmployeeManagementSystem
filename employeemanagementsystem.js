@@ -114,7 +114,7 @@ const addRole = () => {
         message: `What role would you like to add?`,
     })
     .then((answer) => {
-        const query = `INSERT INTO id, title, salary or department_id SET ?`;
+        const query = `INSERT INTO role SET ?`;
         connection.query(query, answer.role) 
             console.log(answer.role);
             runSearch();
@@ -131,7 +131,7 @@ const addEmployee = () => {
         message: `What employee would you like to add?`,
     })
     .then((answer) => {
-        const query = `INSERT INTO id, first_name, last_name, role_id or manager_id SET ?`;
+        const query = `INSERT INTO employee SET ?`;
         connection.query(query, answer.employee)
             console.log(answer.employee);
             runSearch();
@@ -154,8 +154,8 @@ const viewDepartment = () => {
                 console.log(res);
             });
             runSearch();
-        });
-    };
+    });
+};
 
 //View Role Function
 
@@ -167,16 +167,13 @@ const viewRole = () => {
         message: `What role would you like to view?`,
     })
     .then((answer) => {
-        const query = `SELECT * FROM id, title, salary or department_id`;
-        connection.query(query, { id: answer.id }, (err, res) => {
-            res.forEach(({ id, title, salary, department_id }) => {
-                console.log(
-                    `ID: ${id} || Title: ${title} || Salary: ${salary} || Department ID: ${department_id}`
-                );
+        const query = `SELECT * FROM role`;
+        connection.query(query, function(err, res) {
+            if (err) throw err; 
+                console.log(res);
             });
             runSearch();
         });
-    });
 };
 
 //View Employee Function
@@ -189,16 +186,13 @@ const viewEmployee = () => {
         message: `What employee would you like to view?`,
     })
     .then((answer) => {
-        const query = `SELECT * FROM id, first_name, last_name, role_id or manager_id`;
-        connection.query(query, { id: answer.id }, (err, res) => {
-            res.forEach(({ id, first_name, last_name, role_id, manager_id }) => {
-                console.log(
-                    `ID: ${id} || First Name: ${first_name} || Last Name: ${last_name} || Role ID: ${role_id} || Manager ID: ${manager_id}`
-                );
+        const query = `SELECT * FROM employee`;
+        connection.query(query, function(err, res) {
+            if (err) throw err; 
+                console.log(res);
             });
             runSearch();
         });
-    });
 };
 
 //Update Employee Role Function
@@ -253,15 +247,49 @@ const updateEmployeeRoles = () => {
 //Update Employee Manager Function
 
 const updateEmployeeManager = () => {
+    connection.query("SELECT * FROM employee manager", (err, data) => {
+        if (err) throw err;
+        console.log(data);
+        var employees = data.map(e => ({
+            name: `${e.first_name} ${e.last_name}`,
+            value: `${e.id}`
+        }));
+        console.log(managers);
+    
+    connection.query("SELECT * FROM manager role", (err, data) => {
+        if (err) throw err;
+        console.log(data);
+        var roles = data.map(r => ({
+            name: `${r.title}`,
+            value: `${r.id}`
+        }));
+    
+    
     inquirer
-    .prompt({
-        name: `updated employee manager`,
-        type: `input`,
-        message: `What employee manager would you like to update?`,
+    .prompt([
+    {
+        name: `updatedManager`,
+        type: `list`,
+        message: `Which manager's role needs to be updated?`,
+        choices: managers
+    }, 
+    {
+        name: `updatedRole`,
+        type: `list`,
+        message: `What is the new role?`,
+        choices: roles
+    }
+])
+    .then(function({updatedManager, updatedRole}) {
+        const query = `UPDATE manager SET role_id = ? WHERE id = ?`;
+        connection.query(query, [updatedManager, updatedRole], function(err, res){
+            if (err) throw err;
+            console.log("Managers and Roles updated");
+            runSearch(); 
+        })
     })
-    .then((answer) => {
-
-    })
+});
+})
 }
 
 //View Employee by Manager Function
