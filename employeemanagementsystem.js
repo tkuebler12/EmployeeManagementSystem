@@ -30,12 +30,12 @@ const runSearch = () => {
             `View a role`,
             `View an employee`,
             `Update employee roles`,
-            `Update employee manager`,
-            `View employees by manager`,
-            `Delete a department`,
-            `Delete a role`,
-            `Delete an employee`,
-            `View total utilized budget of a department`
+            // `Update employee manager`,
+            // `View employees by manager`,
+            // `Delete a department`,
+            // `Delete a role`,
+            // `Delete an employee`,
+            // `View total utilized budget of a department`
         ],
     })
     .then((answer) => {
@@ -94,32 +94,70 @@ const addDepartment = () => {
     .prompt({
         name: `department`,
         type: `input`,
-        message: `What department would you like to add?`,
+        message: `What department would you like to add?`
     })
-    .then((answer) => {
-        const query = `INSERT INTO department SET ?`;
-        connection.query(query, answer.department)
+    .then(answer => {
+        const query = `INSERT INTO department (name) VALUES (?)`;
+        connection.query(query, [answer.department], (err, res) => {
+            if (err) throw err;
             console.log(answer.department);
             runSearch();
         });
+    });
 };
 
 //Add Role Function
 
 const addRole = () => {
+
+    var departments = [];
+    connection.query(`SELECT * FROM department`, (err, data) => {
+        if (err) throw err;
+        console.log(data);
+        var departments = data.map(d => ({
+            name: d.name,
+            value: d.id,
+        }))
+
+
     inquirer
-    .prompt({
+    .prompt([
+    {
         name: `role`,
         type: `input`,
-        message: `What role would you like to add?`,
-    })
-    .then((answer) => {
-        const query = `INSERT INTO role SET ?`;
-        connection.query(query, answer.role) 
-            console.log(answer.role);
+        message: `What is the role title you would like to add?`
+    },
+
+    {
+        name: `salary`,
+        type: `input`,
+        message: `What is the new salary?`
+    },
+
+    {
+        name: `department_id`,
+        type: `choices`,
+        message: `What department is the role in?`,
+        choices: departments
+    }])
+    
+    
+
+
+
+    .then(answer => {
+        const query = `INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)`;
+        connection.query(query, [answer.role, answer.salary, answer.department_id], (err, res) => {
+            if (err) throw err;
+            console.log(answer.role, answer.salary, answer.department_id);
             runSearch();
+        }) 
+
         });
+    });
+
 };
+
 
 //Add Employee Function
 
@@ -148,6 +186,7 @@ const viewDepartment = () => {
         message: `What department would you like to view?`,
     })
     .then((answer) => {
+        answer.department
         const query = `SELECT * FROM department`;
         connection.query(query, function(err, res) {
             if (err) throw err;
@@ -167,7 +206,7 @@ const viewRole = () => {
         message: `What role would you like to view?`,
     })
     .then((answer) => {
-        const query = `SELECT * FROM role`;
+        const query = `SELECT * FROM roles`;
         connection.query(query, function(err, res) {
             if (err) throw err; 
                 console.log(res);
