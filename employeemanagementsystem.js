@@ -162,18 +162,58 @@ const addRole = () => {
 //Add Employee Function
 
 const addEmployee = () => {
+
+    var newEmployee = [];
+    connection.query(`SELECT * FROM employee`, (err, data) => {
+        if (err) throw err;
+        console.log(data);
+        var newEmployee = data.map(n => ({
+            name: n.name,
+            value: n.id,
+        }))
+
+
     inquirer
-    .prompt({
-        name: `employee`,
+    .prompt([
+    {
+        name: `first_name`,
         type: `input`,
-        message: `What employee would you like to add?`,
-    })
-    .then((answer) => {
-        const query = `INSERT INTO employee SET ?`;
-        connection.query(query, answer.employee)
-            console.log(answer.employee);
+        message: `What is the first name of the new employee?`
+    },
+
+    {
+        name: `last_name`,
+        type: `input`,
+        message: `What is the last name of the new employee?`
+    },
+
+    {
+        name: `role_id`,
+        type: `input`,
+        message: `What role is the new employee in?`,
+    },
+
+    {
+        name: `manager_id`,
+        type: `input`,
+        message: `What is the new manager ID of the new employee?`,
+    }])
+    
+    
+
+
+
+    .then(answer => {
+        const query = `INSERT INTO roles (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
+        connection.query(query, [answer.first_name, answer.last_name, answer.role_id, answer.manager_id], (err, res) => {
+            if (err) throw err;
+            console.log(answer.first_name, answer.last_name, answer.role_id, answer.manager_id);
             runSearch();
+        }) 
+
         });
+    });
+
 };
 
 //View Department Function
